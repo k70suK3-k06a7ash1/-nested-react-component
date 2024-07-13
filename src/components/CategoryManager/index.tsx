@@ -1,22 +1,6 @@
 import { produce } from "immer";
 import React, { useReducer } from "react";
-
-// 型定義
-interface Item {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  subcategories: Category[];
-  items: Item[];
-}
-
-interface State {
-  categories: Category;
-}
+import { Category, Item, State } from "./interfaces";
 
 type Action =
   | { type: "ADD_CATEGORY"; payload: { path: number[]; name: string } }
