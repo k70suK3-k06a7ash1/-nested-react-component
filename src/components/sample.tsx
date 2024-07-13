@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import React, { useReducer } from "react";
 
 // 型定義
@@ -45,35 +46,47 @@ function reducer(state: State, action: Action): State {
 
 // カテゴリを追加する関数
 function addCategory(state: State, path: number[], name: string): State {
-  const newState = JSON.parse(JSON.stringify(state)) as State; // ディープコピー
-  let current = newState.categories;
+  return produce(state, (draft) => {
+    const addCategoryRecursive = (
+      category: Category,
+      remainingPath: number[]
+    ) => {
+      if (remainingPath.length === 0) {
+        category.subcategories.push({
+          id: `category-${Date.now()}`,
+          name,
+          subcategories: [],
+          items: [],
+        });
+      } else {
+        const [currentIndex, ...restPath] = remainingPath;
+        addCategoryRecursive(category.subcategories[currentIndex], restPath);
+      }
+    };
 
-  for (const index of path) {
-    current = current.subcategories[index];
-  }
-
-  current.subcategories.push({
-    id: `category-${Date.now()}`,
-    name,
-    subcategories: [],
-    items: [],
+    addCategoryRecursive(draft.categories, path);
   });
-
-  return newState;
 }
 
-// アイテムを追加する関数
 function addItem(state: State, path: number[], item: Item): State {
-  const newState = JSON.parse(JSON.stringify(state)) as State; // ディープコピー
-  let current = newState.categories;
+  return produce(state, (draft) => {
+    const addItemRecursive = (category: Category, remainingPath: number[]) => {
+      if (remainingPath.length === 0) {
+        category.items.push(item);
+      } else {
+        const [currentIndex, ...restPath] = remainingPath;
+        if (currentIndex >= 0 && currentIndex < category.subcategories.length) {
+          addItemRecursive(category.subcategories[currentIndex], restPath);
+        } else {
+          throw new Error(
+            `Invalid path: subcategory at index ${currentIndex} does not exist`
+          );
+        }
+      }
+    };
 
-  for (const index of path) {
-    current = current.subcategories[index];
-  }
-
-  current.items.push(item);
-
-  return newState;
+    addItemRecursive(draft.categories, path);
+  });
 }
 
 const CategoryManager: React.FC = () => {
