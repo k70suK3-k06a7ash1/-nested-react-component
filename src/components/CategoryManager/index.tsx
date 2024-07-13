@@ -20,66 +20,6 @@ const initialState: State = {
   },
 };
 
-// const CategoryManager: React.FC = () => {
-//   const [state, dispatch] = useReducer(reducer, initialState);
-
-//   const renderCategory = (
-//     category: Category,
-//     path: number[] = []
-//   ): JSX.Element => {
-//     return (
-//       <div style={{ marginLeft: "20px" }}>
-//         <h3>{category.name}</h3>
-//         <button
-//           onClick={() =>
-//             dispatch({
-//               type: "ADD_CATEGORY",
-//               payload: {
-//                 path,
-//                 name: `New Category ${category.subcategories.length + 1}`,
-//               },
-//             })
-//           }
-//         >
-//           Add Subcategory
-//         </button>
-//         <button
-//           onClick={() =>
-//             dispatch({
-//               type: "ADD_ITEM",
-//               payload: {
-//                 path,
-//                 item: {
-//                   id: `item-${Date.now()}`,
-//                   name: `New Item ${category.items.length + 1}`,
-//                 },
-//               },
-//             })
-//           }
-//         >
-//           Add Item
-//         </button>
-//         <ul>
-//           {category.items.map((item) => (
-//             <li key={item.id}>{item.name}</li>
-//           ))}
-//         </ul>
-//         {category.subcategories.map((subcat, index) => (
-//           <div key={subcat.id}>{renderCategory(subcat, [...path, index])}</div>
-//         ))}
-//       </div>
-//     );
-//   };
-
-//   return (
-//     <div>
-//       <h2>Category Manager</h2>
-//       {renderCategory(state.categories)}
-//     </div>
-//   );
-// };
-
-// Reactコンポーネント
 const CategoryManager: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
