@@ -1,10 +1,14 @@
-import { produce } from "immer";
 import React, { useReducer } from "react";
-import { Category, Item, State } from "./interfaces";
-
-type Action =
-  | { type: "ADD_CATEGORY"; payload: { path: number[]; name: string } }
-  | { type: "ADD_ITEM"; payload: { path: number[]; item: Item } };
+import { Category, State } from "./interfaces";
+import {
+  addCategory,
+  addItem,
+  copyCategory,
+  copyItem,
+  reducer,
+  removeCategory,
+  removeItem,
+} from "./functions";
 
 // 初期状態
 const initialState: State = {
@@ -16,63 +20,66 @@ const initialState: State = {
   },
 };
 
-// リデューサー関数
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "ADD_CATEGORY":
-      return addCategory(state, action.payload.path, action.payload.name);
-    case "ADD_ITEM":
-      return addItem(state, action.payload.path, action.payload.item);
-    default:
-      return state;
-  }
-}
+// const CategoryManager: React.FC = () => {
+//   const [state, dispatch] = useReducer(reducer, initialState);
 
-// カテゴリを追加する関数
-function addCategory(state: State, path: number[], name: string): State {
-  return produce(state, (draft) => {
-    const addCategoryRecursive = (
-      category: Category,
-      remainingPath: number[]
-    ) => {
-      if (remainingPath.length === 0) {
-        category.subcategories.push({
-          id: `category-${Date.now()}`,
-          name,
-          subcategories: [],
-          items: [],
-        });
-      } else {
-        const [currentIndex, ...restPath] = remainingPath;
-        addCategoryRecursive(category.subcategories[currentIndex], restPath);
-      }
-    };
+//   const renderCategory = (
+//     category: Category,
+//     path: number[] = []
+//   ): JSX.Element => {
+//     return (
+//       <div style={{ marginLeft: "20px" }}>
+//         <h3>{category.name}</h3>
+//         <button
+//           onClick={() =>
+//             dispatch({
+//               type: "ADD_CATEGORY",
+//               payload: {
+//                 path,
+//                 name: `New Category ${category.subcategories.length + 1}`,
+//               },
+//             })
+//           }
+//         >
+//           Add Subcategory
+//         </button>
+//         <button
+//           onClick={() =>
+//             dispatch({
+//               type: "ADD_ITEM",
+//               payload: {
+//                 path,
+//                 item: {
+//                   id: `item-${Date.now()}`,
+//                   name: `New Item ${category.items.length + 1}`,
+//                 },
+//               },
+//             })
+//           }
+//         >
+//           Add Item
+//         </button>
+//         <ul>
+//           {category.items.map((item) => (
+//             <li key={item.id}>{item.name}</li>
+//           ))}
+//         </ul>
+//         {category.subcategories.map((subcat, index) => (
+//           <div key={subcat.id}>{renderCategory(subcat, [...path, index])}</div>
+//         ))}
+//       </div>
+//     );
+//   };
 
-    addCategoryRecursive(draft.categories, path);
-  });
-}
+//   return (
+//     <div>
+//       <h2>Category Manager</h2>
+//       {renderCategory(state.categories)}
+//     </div>
+//   );
+// };
 
-function addItem(state: State, path: number[], item: Item): State {
-  return produce(state, (draft) => {
-    const addItemRecursive = (category: Category, remainingPath: number[]) => {
-      if (remainingPath.length === 0) {
-        category.items.push(item);
-      } else {
-        const [currentIndex, ...restPath] = remainingPath;
-        if (currentIndex >= 0 && currentIndex < category.subcategories.length) {
-          addItemRecursive(category.subcategories[currentIndex], restPath);
-        } else {
-          throw new Error(
-            `Invalid path: subcategory at index ${currentIndex} does not exist`
-          );
-        }
-      }
-    };
-
-    addItemRecursive(draft.categories, path);
-  });
-}
-
+// Reactコンポーネント
 const CategoryManager: React.FC = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -85,40 +92,53 @@ const CategoryManager: React.FC = () => {
         <h3>{category.name}</h3>
         <button
           onClick={() =>
-            dispatch({
-              type: "ADD_CATEGORY",
-              payload: {
+            dispatch(
+              addCategory(
                 path,
-                name: `New Category ${category.subcategories.length + 1}`,
-              },
-            })
+                `New Category ${category.subcategories.length + 1}`
+              )
+            )
           }
         >
           Add Subcategory
         </button>
         <button
           onClick={() =>
-            dispatch({
-              type: "ADD_ITEM",
-              payload: {
-                path,
-                item: {
-                  id: `item-${Date.now()}`,
-                  name: `New Item ${category.items.length + 1}`,
-                },
-              },
-            })
+            dispatch(
+              addItem(path, {
+                id: `item-${Date.now()}`,
+                name: `New Item ${category.items.length + 1}`,
+              })
+            )
           }
         >
           Add Item
         </button>
+        <button onClick={() => dispatch(removeCategory(path))}>
+          Remove This Category
+        </button>
         <ul>
           {category.items.map((item) => (
-            <li key={item.id}>{item.name}</li>
+            <li key={item.id}>
+              {item.name}
+              <button onClick={() => dispatch(removeItem(path, item.id))}>
+                Remove
+              </button>
+              <button onClick={() => dispatch(copyItem(path, item.id, path))}>
+                Copy
+              </button>
+            </li>
           ))}
         </ul>
         {category.subcategories.map((subcat, index) => (
-          <div key={subcat.id}>{renderCategory(subcat, [...path, index])}</div>
+          <div key={subcat.id}>
+            {renderCategory(subcat, [...path, index])}
+            <button
+              onClick={() => dispatch(copyCategory([...path, index], path))}
+            >
+              Copy This Category
+            </button>
+          </div>
         ))}
       </div>
     );
