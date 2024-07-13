@@ -2,7 +2,7 @@ import { produce } from "immer";
 import { Category, Item, State } from "./interfaces";
 
 // アクションの型定義を改善
-type Action =
+export type Action =
   | { type: "ADD_CATEGORY"; payload: { path: number[]; name: string } }
   | { type: "ADD_ITEM"; payload: { path: number[]; item: Item } }
   | { type: "REMOVE_CATEGORY"; payload: { path: number[] } }
