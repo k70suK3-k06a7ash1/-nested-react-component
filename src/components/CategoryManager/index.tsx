@@ -70,9 +70,9 @@ const CategoryManager: React.FC = () => {
             </li>
           ))}
         </ul>
-        {category.subcategories.map((subcat, index) => (
-          <div key={subcat.id}>
-            {renderCategory(subcat, [...path, index])}
+        {category.subcategories.map((subcategory, index) => (
+          <div key={subcategory.id}>
+            {renderCategory(subcategory, [...path, index])}
             <button
               onClick={() => dispatch(copyCategory([...path, index], path))}
             >
