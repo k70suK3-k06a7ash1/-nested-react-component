@@ -2,7 +2,10 @@ import { produce } from "immer";
 import { Condition, RuleAndPolicy, State } from "./interfaces";
 
 export type Action =
-  | { type: "ADD_CONDITION"; payload: { path: number[]; name: string } }
+  | {
+      type: "ADD_CONDITION";
+      payload: { path: number[]; joinOperator: "AND" | "OR" };
+    }
   | {
       type: "ADD_RULE_AND_POLICY";
       payload: { path: number[]; ruleAndPolicy: RuleAndPolicy };
@@ -25,9 +28,12 @@ export type Action =
       };
     };
 
-export const addCondition = (path: number[], name: string): Action => ({
+export const addCondition = (
+  path: number[],
+  joinOperator: "AND" | "OR"
+): Action => ({
   type: "ADD_CONDITION",
-  payload: { path, name },
+  payload: { path, joinOperator },
 });
 
 export const addRuleAndPolicy = (
@@ -109,10 +115,10 @@ export function reducer(state: State, action: Action): State {
 
     switch (action.type) {
       case "ADD_CONDITION":
-        updateRecursive(draft.condition, action.payload.path, (category) => {
-          category.conditionGroup.push({
+        updateRecursive(draft.condition, action.payload.path, (condition) => {
+          condition.conditionGroup.push({
             id: `category-${Date.now()}`,
-            name: action.payload.name,
+            joinOperator: "AND",
             conditionGroup: [],
             ruleAndPolicies: [],
           });

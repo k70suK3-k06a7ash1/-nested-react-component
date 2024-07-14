@@ -14,7 +14,7 @@ import {
 const initialState: State = {
   condition: {
     id: "root",
-    name: "Root",
+    joinOperator: "AND",
     conditionGroup: [],
     ruleAndPolicies: [],
   },
@@ -26,7 +26,7 @@ const RuleAndPolicy: React.FC<{
   dispatch: React.Dispatch<Action>;
 }> = ({ ruleAndPolicy, path, dispatch }) => (
   <li>
-    {ruleAndPolicy.name}
+    {ruleAndPolicy.subject} {ruleAndPolicy.operator} {ruleAndPolicy.object}
     <button
       onClick={() => dispatch(removeRuleAndPolicy(path, ruleAndPolicy.id))}
     >
@@ -46,17 +46,8 @@ const ConditionComponent: React.FC<{
 }> = ({ condition, path, dispatch }) => {
   return (
     <div style={{ marginLeft: "80px" }}>
-      <h3>{condition.name}</h3>
-      <button
-        onClick={() =>
-          dispatch(
-            addCondition(
-              path,
-              `New Condition ${condition.conditionGroup.length + 1}`
-            )
-          )
-        }
-      >
+      <h2>{condition.joinOperator}</h2>
+      <button onClick={() => dispatch(addCondition(path, "AND"))}>
         Add Condition Group
       </button>
       <button
@@ -64,7 +55,9 @@ const ConditionComponent: React.FC<{
           dispatch(
             addRuleAndPolicy(path, {
               id: `item-${Date.now()}`,
-              name: `New Item ${condition.ruleAndPolicies.length + 1}`,
+              subject: "new",
+              operator: "equal",
+              object: "this",
             })
           )
         }

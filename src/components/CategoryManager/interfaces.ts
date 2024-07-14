@@ -1,12 +1,16 @@
 // 型定義
 export interface RuleAndPolicy {
   id: string;
-  name: string;
+  subject: string;
+  operator: string;
+  object: string;
 }
+
+export type JoinOperator = "AND" | "OR";
 
 export interface Condition {
   id: string;
-  name: string;
+  joinOperator: JoinOperator;
   conditionGroup: Condition[];
   ruleAndPolicies: RuleAndPolicy[];
 }
