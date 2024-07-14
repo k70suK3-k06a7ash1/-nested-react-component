@@ -53,30 +53,34 @@ const ConditionComponent: React.FC<{
 }> = ({ condition, path, dispatch }) => {
   return (
     <div style={{ marginLeft: "80px" }}>
-      <h2>{condition.joinOperator}</h2>
-      <button onClick={() => dispatch(addCondition(path, "AND"))}>
-        Add Condition Group
-      </button>
-      <button
-        onClick={() =>
-          dispatch(
-            addRuleAndPolicy(path, {
-              id: `item-${Date.now()}`,
-              subject: "new",
-              operator: "equal",
-              object: "this",
-            })
-          )
-        }
-      >
-        Add Rule And Policy
-      </button>
-      {path.length > 0 && (
-        <button onClick={() => dispatch(removeCondition(path))}>
-          Remove This Condition
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <h2>{condition.joinOperator}</h2>
+        <button
+          onClick={() => dispatch(addCondition(path, Math.random().toString()))}
+        >
+          Add Condition Group
         </button>
-      )}
-      <span>{JSON.stringify(path)}</span>
+        <button
+          onClick={() =>
+            dispatch(
+              addRuleAndPolicy(path, {
+                id: `item-${Date.now()}`,
+                subject: "new",
+                operator: "equal",
+                object: "this",
+              })
+            )
+          }
+        >
+          Add Rule And Policy
+        </button>
+        {path.length > 0 && (
+          <button onClick={() => dispatch(removeCondition(path))}>
+            Remove This Condition
+          </button>
+        )}
+        <span>{JSON.stringify(path)}</span>
+      </div>
       <ul>
         {condition.ruleAndPolicies.map((ruleAndPolicy, index) => (
           <div style={{ display: "flex" }}>

@@ -6,11 +6,11 @@ export interface RuleAndPolicy {
   object: string; // string[] or string or number or number[]
 }
 
-export type JoinOperator = "AND" | "OR";
+// export type JoinOperator = "AND" | "OR";
 
 export interface Condition {
   id: string;
-  joinOperator: JoinOperator;
+  joinOperator: string;
   conditionGroup: Condition[];
   ruleAndPolicies: RuleAndPolicy[];
 }

@@ -12,7 +12,7 @@ const createDummyRuleAndPolicy = (id: string): RuleAndPolicy => ({
 const createDummyCondition = (id: string, depth: number): Condition => {
   const condition: Condition = {
     id,
-    joinOperator: Math.random() > 0.5 ? "AND" : "OR",
+    joinOperator: Math.random().toString(),
     conditionGroup: [],
     ruleAndPolicies: [],
   };

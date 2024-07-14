@@ -4,7 +4,7 @@ import { Condition, RuleAndPolicy, State } from "./interfaces";
 export type Action =
   | {
       type: "ADD_CONDITION";
-      payload: { path: number[]; joinOperator: "AND" | "OR" };
+      payload: { path: number[]; joinOperator: string };
     }
   | {
       type: "ADD_RULE_AND_POLICY";
@@ -54,10 +54,7 @@ export const moveRuleAndPolicy = (
   payload: { path, fromIndex, toIndex },
 });
 
-export const addCondition = (
-  path: number[],
-  joinOperator: "AND" | "OR"
-): Action => ({
+export const addCondition = (path: number[], joinOperator: string): Action => ({
   type: "ADD_CONDITION",
   payload: { path, joinOperator },
 });
@@ -144,7 +141,7 @@ export function reducer(state: State, action: Action): State {
         updateRecursive(draft.condition, action.payload.path, (condition) => {
           condition.conditionGroup.push({
             id: `category-${Date.now()}`,
-            joinOperator: "AND",
+            joinOperator: Math.random().toString(),
             conditionGroup: [],
             ruleAndPolicies: [],
           });
