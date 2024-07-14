@@ -1,9 +1,9 @@
 // 型定義
 export interface RuleAndPolicy {
   id: string;
-  subject: string;
-  operator: string;
-  object: string;
+  subject: string; // ENUM
+  operator: string; // ENUM
+  object: string; // string[] or string or number or number[]
 }
 
 export type JoinOperator = "AND" | "OR";

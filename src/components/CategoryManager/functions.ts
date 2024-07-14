@@ -76,7 +76,7 @@ export const copyItem = (
 
 export function reducer(state: State, action: Action): State {
   return produce(state, (draft) => {
-    const getCategory = (path: number[]): Condition | null => {
+    const getCondition = (path: number[]): Condition | null => {
       let current: Condition = draft.condition;
       for (const index of path) {
         if (index < 0 || index >= current.conditionGroup.length) {
@@ -88,20 +88,20 @@ export function reducer(state: State, action: Action): State {
     };
 
     const updateRecursive = (
-      category: Condition,
+      condition: Condition,
       path: number[],
       updater: (condition: Condition) => void
     ) => {
       if (path.length === 0) {
-        updater(category);
+        updater(condition);
       } else {
         const [currentIndex, ...restPath] = path;
         if (
           currentIndex >= 0 &&
-          currentIndex < category.conditionGroup.length
+          currentIndex < condition.conditionGroup.length
         ) {
           updateRecursive(
-            category.conditionGroup[currentIndex],
+            condition.conditionGroup[currentIndex],
             restPath,
             updater
           );
@@ -153,7 +153,7 @@ export function reducer(state: State, action: Action): State {
         break;
 
       case "COPY_CONDITION":
-        const sourceCategory = getCategory(action.payload.sourcePath);
+        const sourceCategory = getCondition(action.payload.sourcePath);
         if (sourceCategory) {
           const copiedCategory: Condition = JSON.parse(
             JSON.stringify(sourceCategory)
@@ -170,7 +170,7 @@ export function reducer(state: State, action: Action): State {
         break;
 
       case "COPY_RULE_AND_POLICY":
-        const sourceCategory2 = getCategory(action.payload.sourcePath);
+        const sourceCategory2 = getCondition(action.payload.sourcePath);
         if (sourceCategory2) {
           const itemToCopy = sourceCategory2.ruleAndPolicies.find(
             (ruleAndPolicy) => ruleAndPolicy.id === action.payload.itemId
