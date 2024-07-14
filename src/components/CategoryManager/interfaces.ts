@@ -1,16 +1,16 @@
 // 型定義
-export interface Item {
+export interface RuleAndPolicy {
   id: string;
   name: string;
 }
 
-export interface Category {
+export interface Condition {
   id: string;
   name: string;
-  subcategories: Category[];
-  items: Item[];
+  conditionGroup: Condition[];
+  ruleAndPolicies: RuleAndPolicy[];
 }
 
 export interface State {
-  categories: Category;
+  condition: Condition;
 }

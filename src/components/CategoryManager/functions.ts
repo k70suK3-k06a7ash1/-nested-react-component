@@ -1,18 +1,23 @@
 import { produce } from "immer";
-import { Category, Item, State } from "./interfaces";
+import { Condition, RuleAndPolicy, State } from "./interfaces";
 
-// アクションの型定義を改善
 export type Action =
-  | { type: "ADD_CATEGORY"; payload: { path: number[]; name: string } }
-  | { type: "ADD_ITEM"; payload: { path: number[]; item: Item } }
-  | { type: "REMOVE_CATEGORY"; payload: { path: number[] } }
-  | { type: "REMOVE_ITEM"; payload: { path: number[]; itemId: string } }
+  | { type: "ADD_CONDITION"; payload: { path: number[]; name: string } }
   | {
-      type: "COPY_CATEGORY";
+      type: "ADD_RULE_AND_POLICY";
+      payload: { path: number[]; ruleAndPolicy: RuleAndPolicy };
+    }
+  | { type: "REMOVE_CONDITION"; payload: { path: number[] } }
+  | {
+      type: "REMOVE_RULE_AND_POLICY";
+      payload: { path: number[]; itemId: string };
+    }
+  | {
+      type: "COPY_CONDITION";
       payload: { sourcePath: number[]; destinationPath: number[] };
     }
   | {
-      type: "COPY_ITEM";
+      type: "COPY_RULE_AND_POLICY";
       payload: {
         sourcePath: number[];
         itemId: string;
@@ -20,32 +25,37 @@ export type Action =
       };
     };
 
-// アクションクリエーターを定義
-export const addCategory = (path: number[], name: string): Action => ({
-  type: "ADD_CATEGORY",
+export const addCondition = (path: number[], name: string): Action => ({
+  type: "ADD_CONDITION",
   payload: { path, name },
 });
 
-export const addItem = (path: number[], item: Item): Action => ({
-  type: "ADD_ITEM",
-  payload: { path, item },
+export const addRuleAndPolicy = (
+  path: number[],
+  ruleAndPolicy: RuleAndPolicy
+): Action => ({
+  type: "ADD_RULE_AND_POLICY",
+  payload: { path, ruleAndPolicy },
 });
 
-export const removeCategory = (path: number[]): Action => ({
-  type: "REMOVE_CATEGORY",
+export const removeCondition = (path: number[]): Action => ({
+  type: "REMOVE_CONDITION",
   payload: { path },
 });
 
-export const removeItem = (path: number[], itemId: string): Action => ({
-  type: "REMOVE_ITEM",
+export const removeRuleAndPolicy = (
+  path: number[],
+  itemId: string
+): Action => ({
+  type: "REMOVE_RULE_AND_POLICY",
   payload: { path, itemId },
 });
 
-export const copyCategory = (
+export const copyCondition = (
   sourcePath: number[],
   destinationPath: number[]
 ): Action => ({
-  type: "COPY_CATEGORY",
+  type: "COPY_CONDITION",
   payload: { sourcePath, destinationPath },
 });
 
@@ -54,61 +64,38 @@ export const copyItem = (
   itemId: string,
   destinationPath: number[]
 ): Action => ({
-  type: "COPY_ITEM",
+  type: "COPY_RULE_AND_POLICY",
   payload: { sourcePath, itemId, destinationPath },
 });
 
-// リデューサー関数
 export function reducer(state: State, action: Action): State {
   return produce(state, (draft) => {
-    const getCategory = (path: number[]): Category | null => {
-      let current: Category = draft.categories;
+    const getCategory = (path: number[]): Condition | null => {
+      let current: Condition = draft.condition;
       for (const index of path) {
-        if (index < 0 || index >= current.subcategories.length) {
+        if (index < 0 || index >= current.conditionGroup.length) {
           return null;
         }
-        current = current.subcategories[index];
+        current = current.conditionGroup[index];
       }
       return current;
     };
 
-    //   const updateRecursive = (
-    //     category: Category,
-    //     path: number[],
-    //     updater: (category: Category) => void
-    //   ) => {
-    //     if (path.length === 0) {
-    //       updater(category);
-    //     } else {
-    //       const [currentIndex, ...restPath] = path;
-    //       if (
-    //         currentIndex >= 0 &&
-    //         currentIndex < category.subcategories.length
-    //       ) {
-    //         updateRecursive(
-    //           category.subcategories[currentIndex],
-    //           restPath,
-    //           updater
-    //         );
-    //       } else {
-    //         throw new Error(
-    //           `Invalid path: subcategory at index ${currentIndex} does not exist`
-    //         );
-    //       }
-    //     }
-    //   };
     const updateRecursive = (
-      category: Category,
+      category: Condition,
       path: number[],
-      updater: (category: Category) => void
+      updater: (condition: Condition) => void
     ) => {
       if (path.length === 0) {
         updater(category);
       } else {
         const [currentIndex, ...restPath] = path;
-        if (currentIndex >= 0 && currentIndex < category.subcategories.length) {
+        if (
+          currentIndex >= 0 &&
+          currentIndex < category.conditionGroup.length
+        ) {
           updateRecursive(
-            category.subcategories[currentIndex],
+            category.conditionGroup[currentIndex],
             restPath,
             updater
           );
@@ -121,77 +108,77 @@ export function reducer(state: State, action: Action): State {
     };
 
     switch (action.type) {
-      case "ADD_CATEGORY":
-        updateRecursive(draft.categories, action.payload.path, (category) => {
-          category.subcategories.push({
+      case "ADD_CONDITION":
+        updateRecursive(draft.condition, action.payload.path, (category) => {
+          category.conditionGroup.push({
             id: `category-${Date.now()}`,
             name: action.payload.name,
-            subcategories: [],
-            items: [],
+            conditionGroup: [],
+            ruleAndPolicies: [],
           });
         });
         break;
 
-      case "ADD_ITEM":
-        updateRecursive(draft.categories, action.payload.path, (category) => {
-          category.items.push(action.payload.item);
+      case "ADD_RULE_AND_POLICY":
+        updateRecursive(draft.condition, action.payload.path, (category) => {
+          category.ruleAndPolicies.push(action.payload.ruleAndPolicy);
         });
         break;
 
-      case "REMOVE_CATEGORY":
+      case "REMOVE_CONDITION":
         if (action.payload.path.length > 0) {
           const parentPath = action.payload.path.slice(0, -1);
           const lastIndex = action.payload.path[action.payload.path.length - 1];
-          updateRecursive(draft.categories, parentPath, (category) => {
-            category.subcategories.splice(lastIndex, 1);
+          updateRecursive(draft.condition, parentPath, (category) => {
+            category.conditionGroup.splice(lastIndex, 1);
           });
         }
         break;
 
-      case "REMOVE_ITEM":
-        updateRecursive(draft.categories, action.payload.path, (category) => {
-          const index = category.items.findIndex(
-            (item) => item.id === action.payload.itemId
+      case "REMOVE_RULE_AND_POLICY":
+        updateRecursive(draft.condition, action.payload.path, (category) => {
+          const index = category.ruleAndPolicies.findIndex(
+            (ruleAndPolicy) => ruleAndPolicy.id === action.payload.itemId
           );
           if (index !== -1) {
-            category.items.splice(index, 1);
+            category.ruleAndPolicies.splice(index, 1);
           }
         });
         break;
 
-      case "COPY_CATEGORY":
+      case "COPY_CONDITION":
         const sourceCategory = getCategory(action.payload.sourcePath);
         if (sourceCategory) {
-          const copiedCategory: Category = JSON.parse(
+          const copiedCategory: Condition = JSON.parse(
             JSON.stringify(sourceCategory)
           );
-          copiedCategory.id = `category-${Date.now()}`; // 新しいIDを割り当て
+          copiedCategory.id = `category-${Date.now()}`;
           updateRecursive(
-            draft.categories,
+            draft.condition,
             action.payload.destinationPath,
             (category) => {
-              category.subcategories.push(copiedCategory);
+              category.conditionGroup.push(copiedCategory);
             }
           );
         }
         break;
 
-      case "COPY_ITEM":
+      case "COPY_RULE_AND_POLICY":
         const sourceCategory2 = getCategory(action.payload.sourcePath);
         if (sourceCategory2) {
-          const itemToCopy = sourceCategory2.items.find(
-            (item) => item.id === action.payload.itemId
+          const itemToCopy = sourceCategory2.ruleAndPolicies.find(
+            (ruleAndPolicy) => ruleAndPolicy.id === action.payload.itemId
           );
           if (itemToCopy) {
-            const copiedItem: Item = {
+            const copiedRuleAndPolicy: RuleAndPolicy = {
               ...itemToCopy,
               id: `item-${Date.now()}`,
-            }; // 新しいIDを割り当て
+            };
             updateRecursive(
-              draft.categories,
+              draft.condition,
               action.payload.destinationPath,
               (category) => {
-                category.items.push(copiedItem);
+                category.ruleAndPolicies.push(copiedRuleAndPolicy);
               }
             );
           }
@@ -199,7 +186,6 @@ export function reducer(state: State, action: Action): State {
         break;
 
       default:
-        // 型チェックを厳密に行うため、never型を使用
         const _exhaustiveCheck: never = action;
         return _exhaustiveCheck;
     }
