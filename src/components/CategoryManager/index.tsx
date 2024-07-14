@@ -1,32 +1,28 @@
 import React, { useReducer } from "react";
-import type { Condition, RuleAndPolicy, State } from "./interfaces";
+import type { Condition, RuleAndPolicy } from "./interfaces";
 import {
   Action,
   addCondition,
   addRuleAndPolicy,
   copyCondition,
   copyItem,
+  moveCondition,
+  moveRuleAndPolicy,
   reducer,
   removeCondition,
   removeRuleAndPolicy,
 } from "./functions";
-
-const initialState: State = {
-  condition: {
-    id: "root",
-    joinOperator: "AND",
-    conditionGroup: [],
-    ruleAndPolicies: [],
-  },
-};
+import { dummyInitialState } from "./constants";
 
 const RuleAndPolicy: React.FC<{
   ruleAndPolicy: RuleAndPolicy;
+  index: number;
   path: number[];
   dispatch: React.Dispatch<Action>;
-}> = ({ ruleAndPolicy, path, dispatch }) => (
+}> = ({ ruleAndPolicy, index, path, dispatch }) => (
   <li>
-    {ruleAndPolicy.subject} {ruleAndPolicy.operator} {ruleAndPolicy.object}
+    {ruleAndPolicy.subject} {ruleAndPolicy.operator} {ruleAndPolicy.object}{" "}
+    {index}
     <button
       onClick={() => dispatch(removeRuleAndPolicy(path, ruleAndPolicy.id))}
     >
@@ -34,6 +30,17 @@ const RuleAndPolicy: React.FC<{
     </button>
     <button onClick={() => dispatch(copyItem(path, ruleAndPolicy.id, path))}>
       Copy
+    </button>
+    <button
+      onClick={() =>
+        dispatch(moveRuleAndPolicy(path, index, Math.max(0, index - 1)))
+      }
+      disabled={index === 0}
+    >
+      Move Up
+    </button>
+    <button onClick={() => dispatch(moveRuleAndPolicy(path, index, index + 1))}>
+      Move Down
     </button>
   </li>
 );
@@ -71,10 +78,11 @@ const ConditionComponent: React.FC<{
       )}
       <span>{JSON.stringify(path)}</span>
       <ul>
-        {condition.ruleAndPolicies.map((ruleAndPolicy) => (
+        {condition.ruleAndPolicies.map((ruleAndPolicy, index) => (
           <div style={{ display: "flex" }}>
             <RuleAndPolicy
               key={ruleAndPolicy.id}
+              index={index}
               ruleAndPolicy={ruleAndPolicy}
               path={path}
               dispatch={dispatch}
@@ -95,6 +103,20 @@ const ConditionComponent: React.FC<{
           >
             Copy This Condition
           </button>
+          <button
+            onClick={() =>
+              dispatch(moveCondition(path, index, Math.max(0, index - 1)))
+            }
+            disabled={index === 0}
+          >
+            Move Up
+          </button>
+          <button
+            onClick={() => dispatch(moveCondition(path, index, index + 1))}
+            disabled={index === condition.conditionGroup.length - 1}
+          >
+            Move Down
+          </button>
         </div>
       ))}
     </div>
@@ -102,7 +124,7 @@ const ConditionComponent: React.FC<{
 };
 
 const ConditionManager: React.FC = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, dummyInitialState);
 
   return (
     <div>

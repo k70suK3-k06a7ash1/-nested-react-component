@@ -26,7 +26,33 @@ export type Action =
         itemId: string;
         destinationPath: number[];
       };
+    }
+  | {
+      type: "MOVE_CONDITION";
+      payload: { path: number[]; fromIndex: number; toIndex: number };
+    }
+  | {
+      type: "MOVE_RULE_AND_POLICY";
+      payload: { path: number[]; fromIndex: number; toIndex: number };
     };
+
+export const moveCondition = (
+  path: number[],
+  fromIndex: number,
+  toIndex: number
+): Action => ({
+  type: "MOVE_CONDITION",
+  payload: { path, fromIndex, toIndex },
+});
+
+export const moveRuleAndPolicy = (
+  path: number[],
+  fromIndex: number,
+  toIndex: number
+): Action => ({
+  type: "MOVE_RULE_AND_POLICY",
+  payload: { path, fromIndex, toIndex },
+});
 
 export const addCondition = (
   path: number[],
@@ -190,7 +216,25 @@ export function reducer(state: State, action: Action): State {
           }
         }
         break;
+      case "MOVE_CONDITION":
+        updateRecursive(draft.condition, action.payload.path, (condition) => {
+          const [removed] = condition.conditionGroup.splice(
+            action.payload.fromIndex,
+            1
+          );
+          condition.conditionGroup.splice(action.payload.toIndex, 0, removed);
+        });
+        break;
 
+      case "MOVE_RULE_AND_POLICY":
+        updateRecursive(draft.condition, action.payload.path, (condition) => {
+          const [removed] = condition.ruleAndPolicies.splice(
+            action.payload.fromIndex,
+            1
+          );
+          condition.ruleAndPolicies.splice(action.payload.toIndex, 0, removed);
+        });
+        break;
       default:
         const _exhaustiveCheck: never = action;
         return _exhaustiveCheck;
